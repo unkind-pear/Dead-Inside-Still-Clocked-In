@@ -198,7 +198,11 @@ shoot:
     
     ; Verificar se tiro já está ativo
     load r0, ShotActive
-    jnz shoot_end
+    push r7
+    loadn r7, #0
+    cmp r7, r0
+    pop r7
+    jne shoot_end
     
     ; Ativar tiro na posição do jogador
     load r0, PlayerPos
@@ -252,13 +256,21 @@ move_shot:
     
     ; Verificar se tiro está ativo
     load r0, ShotActive
-    jz move_shot_end
+    push r7
+    loadn r7, #0
+    cmp r7, r0
+    pop r7
+    jeq move_shot_end
     
     ; Atualizar timer
     load r0, ShotTimer
     dec r0
     store ShotTimer, r0
-    jnz move_shot_end
+    push r7
+    loadn r7, #0
+    cmp r7, r0
+    pop r7
+    jne move_shot_end
     
     ; Resetar timer
     load r0, ShotCooldownTime
@@ -320,7 +332,9 @@ move_shot:
         
         ; Verificar colisão com zumbis
         call check_zombie_collision
-        jnz shot_deactivate
+        loadn r1, #0
+        cmp r0, r1
+        jne shot_deactivate
         
         ; Atualizar posição
         store ShotPos, r1
@@ -354,7 +368,11 @@ move_zombies:
     load r0, ZombieTimer
     dec r0
     store ZombieTimer, r0
-    jnz move_zombies_end
+    push r7
+    loadn r7, #0
+    cmp r7, r0
+    pop r7
+    jne move_zombies_end
     
     ; Resetar timer
     load r0, ZombieMoveTime
@@ -372,7 +390,11 @@ move_zombies:
         loadn r0, #ZombiesAlive
         add r0, r0, r2
         loadi r1, r0
-        jz next_zombie
+        push r7
+        loadn r7, #0
+        cmp r7, r1
+        pop r7
+        jeq next_zombie
         
         ; Calcular movimento em direção ao jogador
         loadn r0, #ZombiesPos
@@ -462,7 +484,6 @@ move_zombies:
 ; *     VERIFICAR COLISÕES COM ZUMBIS   *
 ; ***************************************
 check_zombie_collision:
-    push r0
     push r1
     push r2
     push r3
@@ -481,7 +502,11 @@ check_zombie_collision:
         loadn r4, #ZombiesAlive
         add r4, r4, r3
         loadi r0, r4
-        jz next_collision
+        push r7
+        loadn r7, #0
+        cmp r7, r0
+        pop r7
+        jeq next_collision
         
         ; Verificar colisão com tiro
         loadn r4, #ZombiesPos
@@ -510,7 +535,6 @@ check_zombie_collision:
         pop r3
         pop r2
         pop r1
-        pop r0
         rts
 
 ; ***************************************
@@ -534,7 +558,11 @@ check_game_over:
         loadn r3, #ZombiesAlive
         add r3, r3, r2
         loadi r3, r3
-        jz next_zombie_check
+        push r7
+        loadn r7, #0
+        cmp r7, r3
+        pop r7
+        jeq next_zombie_check
         
         ; Verificar colisão
         loadn r3, #ZombiesPos
@@ -714,7 +742,11 @@ main:
             ; Verificar condições de fim
             call check_game_over
             load r0, GameOverFlag
-            jnz game_over
+            push r7
+            loadn r7, #0
+            cmp r7, r0
+            pop r7
+            jne game_over
         
         ; Delay para controle de FPS
         loadn r1, #50
