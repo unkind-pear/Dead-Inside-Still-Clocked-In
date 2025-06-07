@@ -5,7 +5,6 @@ ZombieChar: var #1
 PlayerChar: var #1
 BulletChar: var #1
 EmptyChar: var #1
-MaxZombiesAllowed: var #1
 Screen: var #1200 
     static Screen + #0, #32
     static Screen + #1, #32
@@ -1230,10 +1229,12 @@ ZombiesPos: var #20
     static ZombiesPos + #19, #6900
 PlayerPos: var #1
 BulletPos: var #1
+
 DelayToShoot: var #1
 DelayToMovePlayer: var #1
 DelayToWrite: var #1
 DelayToMoveZombies: var #1
+
 RandomPosForZombies: var #30
     static RandomPosForZombies + #0, #230
     static RandomPosForZombies + #1, #1175
@@ -1267,6 +1268,18 @@ RandomPosForZombies: var #30
     static RandomPosForZombies + #29, #871
 FacingDirection: var #1
 RandomPosZombiesPointer: var #1
+Waves: var #10 ; número da wave e quantos zumbis vai ter nela
+    static Waves + #0, #3
+    static Waves + #1, #3
+    static Waves + #2, #4
+    static Waves + #3, #6
+    static Waves + #4, #9
+    static Waves + #5, #10
+    static Waves + #6, #14
+    static Waves + #7, #16
+    static Waves + #8, #17
+    static Waves + #9, #20
+WaveCounter: var #1
 
 ; ***************************************
 ; *       PRINTAR GRÁFICO NORMAL        *
@@ -1376,175 +1389,66 @@ printar_grafico_CUSTOM_r7_r6:
         rts
 
 ; ***************************************
-; *          MOVER CARACTERE            *
+; *            MOVER ZUMBI              *
 ; ***************************************
-; r7 = caractere a mover
-; r6 = posicao para mover
-; r5 = posicao inicial (nao considera se for 6900)
-mover_caractere_r7_r5_r6:
-    push r0
-    push r1
-    push r2
-    push r3
-
-    loadn r3, #6900
-    cmp r3, r6
-    jeq mover_caractere_r7_r5_r6.erro
-
-    loadn r0, #1199
-    loadn r1, #0
-    cmp r6, r0
-    jgr mover_caractere_r7_r5_r6.fim
-    cmp r6, r1
-    jle mover_caractere_r7_r5_r6.fim
-
-    loadn r0, Screen
-    add r0, r0, r6
-    loadi r1, r0
-    load r2, EmptyChar
-    cmp r2, r1
-    jne mover_caractere_r7_r5_r6.fim
-
-    cmp r5, r3
-    jeq mover_caractere_r7_r5_r6.sem-pos-inicial
-
-    outchar r2, r5
-    outchar r7, r6
-
-    storei r0, r7
-    loadn r0, Screen
-    add r0, r0, r5
-    storei r0, r2
-
-    mover_caractere_r7_r5_r6.fim:
-        pop r2
-        pop r1
-        pop r0
-        rts
-
-    mover_caractere_r7_r5_r6.sem-pos-inicial:
-        outchar r7, r6
-        storei r0, r7
-
-        jmp mover_caractere_r7_r5_r6.fim
-
-    mover_caractere_r7_r5_r6.erro:
-        error_message_2: string "Tentou colocar um caractere na nova posicao de 6900 (void)"
-        push r7
-        loadn r7, #error_message_2
-        call printar_log_r7
-        pop r7
-        jmp mover_caractere_r7_r5_r6.fim
-
-; ***************************************
-; *        SPAWNAR PROXIMA WAVE         *
-; ***************************************
-spawnar_proxima_wave:
-    push r0
-    push r3
-    push r5
-    push r6
-    push r7
-
-    load r7, ZombieChar
-    loadn r5, #6900
-    loadn r3, #20
-    loadn r0, #ZombiePos
-
-    spawnar_proxima_wave.loop:
-        loadi r6, r0
-
-        cmp r5, r6
-        jeq spawnar_proxima_wave.fim
-
-        dec r3
-        jz spawnar_proxima_wave.fim
-
-        call mover_caractere_r7_r5_r6
-
-        inc r0
-        jmp spawnar_proxima_wave.loop
-
-    spawnar_proxima_wave.fim:
-        pop r7
-        pop r6
-        pop r5
-        pop r3
-        pop r0
-        rts
-
-; ***************************************
-; *      MOVER ZUMBIS A CADA LOOP       *
-; ***************************************
-mover_zumbis:
-    load r0, PlayerPos
-    loadn r1, #40
-
-    div r2, r0, r1; linha que o player esta
-    mod r3, r0, r1; coluna que o player esta
-
-    loadn r6, #ZombiePos
-    mover_zumbis.loop:
-        div r4, r0, r1; linha que o zumbi esta
-        mod r5, r0, r1; coluna que o zumbi esta
-
-; ***************************************
-; *         POSIÇÕES ALEATÓRIAS         *
-; ***************************************
-; exemplo de uso:
-;   loadn r7, #19
-;   call load_random_zombie_positons_r7
-; r7 pode ser no máximo 20
-load_random_zombie_positons_r7
+; r7 = posicao nova para mover
+; r6 = numero do zumbi (0 - 19)
+mover_zumbi_r6_r7:
     push r0
     push r1
     push r2
     push r3
     push r4
-    push r6
+    push r5
 
-    loadn r0, #20
-    cmp r7, r0
-    jeq load_random_zombie_positons_r7.erro
+    loadn r2, #19 ; muda isso para ser 1 - 20 se quiser
+    loadn r3, #0
 
-    loadn r2, #30 ; Nao pode ser igual a 30
-    loadn r1, #RandomPosForZombies ; mesma coisa do de baixo
-    loadn r3, #ZombiesPos ; pointer para a lista
-    loadn r4, #6900
+    cmp r6, r2
+    jgr mover_zumbi_r6_r7.erro ; jump se rx maior que ry
+    cmp r6, r3
+    jle mover_zumbi_r6_r7.erro ; jump se rx menor que ry
 
-    load_random_zombie_positons_r7.loop-clean:
-        storei r3, r4
-        inc r3
-        dec r0
-        jz load_random_zombie_positons_r7.step2
-        jmp load_random_zombie_positons_r7.loop-clean
+    loadn r2, #1199
 
-    load_random_zombie_positons_r7.step2:
-        loadn r3, #ZombiePos
+    cmp r7, r2
+    jgr mover_zumbi_r6_r7.erro2 ; jump se rx maior que ry
+    cmp r7, r3
+    jle mover_zumbi_r6_r7.erro2 ; jump se rx menor que ry
 
-    load_random_zombie_positons_r7.loop:
-        load r0, RandomPosZombiesPointer
-        add r1, r1, r0
-        loadi r6, r1
+    loadn r0, #ZombiePos
+    add r0, r0, r6
+    loadi r1, r0
 
-        storei r3, r6
-        inc r3
+    loadn r2, #6900
 
-        inc r0
-        cmp r0, r2
-        jeq load_random_zombie_positons_r7.reset-pointer
+    cmp r1, r2
+    jeq mover_zumbi_r6_r7.erro3
 
-        dec r7
-        jz load_random_zombie_positons_r7.fim
+    loadn r2, #Screen
+    load r3, EmptyChar
 
-        jmp load_random_zombie_positons_r7.loop
+    add r2, r2, r7
+    loadi r4, r2 ; caractere na pos nova
 
-        load_random_zombie_positons_r7.reset-pointer:
-            loadn r0, #0
-            store RandomPosZombiesPointer, r0
+    cmp r4, r3
+    jne  mover_zumbi_r6_r7.fim ; já tem gente lá
 
-    load_random_zombie_positons_r7.fim:
-        pop r6
+    ; a partir daqui, existe mudança nos dados
+
+    load r5, ZombieChar
+    outchar r5, r7
+    outchar r3, r1
+
+    storei r2, r5 ; guarda na tela o zumbi na nova posição
+    loadn r2, #Screen
+    add r2, r2, r1 ; soma o posição antiga
+    storei r2, r3 ; bota vazio na posição antiga
+
+    storei r0, r7 ; atualiza o ZombiePos
+
+    mover_zumbi_r6_r7.fim:
+        pop r5
         pop r4
         pop r3
         pop r2
@@ -1552,13 +1456,219 @@ load_random_zombie_positons_r7
         pop r0
         rts
 
-    load_random_zombie_positons_r7.erro:
-        error_message_1: string "Colocou algo mais que 20 em r7"
+    mover_zumbi_r6_r7.erro:
+        error_message_4: string "Tentou mover um zumbi que não existe (só aceita de 0 a 19)"
         push r7
-        loadn r7, #error_message_1
+        loadn r7, #error_message_4
         call printar_log_r7
         pop r7
-        jmp load_random_zombie_positons_r7.fim
+        jmp mover_zumbi_r6_r7.fim
+
+    mover_zumbi_r6_r7.erro2:
+        error_message_2: string "Tentou mover o zumbi para uma posição fora da tela"
+        push r7
+        loadn r7, #error_message_2
+        call printar_log_r7
+        pop r7
+        jmp mover_zumbi_r6_r7.fim
+
+    mover_zumbi_r6_r7.erro3:
+        error_message_5: string "O zumbi requisitado possui posição vazia"
+        push r7
+        loadn r7, #error_message_5
+        call printar_log_r7
+        pop r7
+        jmp mover_zumbi_r6_r7.fim
+
+; ***************************************
+; *           MOVER PLAYER              *
+; ***************************************
+; r7 = posicao nova para mover
+mover_player_r7:
+    push r0
+    push r2
+    push r3
+    push r4
+    push r5
+
+    loadn r2, #1199
+    loadn r3, #0
+
+    cmp r7, r2
+    jgr mover_player_r7.erro ; jump se rx maior que ry
+    cmp r7, r3
+    jle mover_player_r7.erro ; jump se rx menor que ry
+
+    load r0, PlayerPos
+
+    cmp r0, r2
+    jgr mover_player_r7.erro2 ; jump se rx maior que ry
+    cmp r0, r3
+    jle mover_player_r7.erro2 ; jump se rx menor que ry
+
+    loadn r2, #Screen
+    load r3, EmptyChar
+
+    add r2, r2, r7
+    loadi r4, r2 ; caractere na pos nova
+
+    cmp r4, r3
+    jne  mover_player_r7.fim ; já tem gente lá
+
+    ; a partir daqui, existe mudança nos dados
+
+    load r5, PlayerChar
+    outchar r5, r7
+    outchar r3, r0
+
+    storei r2, r5 ; guarda na tela o player na nova posição
+    loadn r2, #Screen
+    add r2, r2, r0 ; soma o posição antiga
+    storei r2, r3 ; bota vazio na posição antiga
+
+    store PlayerPos, r7 ; atualiza o PlayerPos
+
+    mover_player_r7.fim:
+        pop r5
+        pop r4
+        pop r3
+        pop r2
+        pop r0
+        rts
+
+    mover_player_r7.erro:
+        error_message_6: string "Tentou mover o player para uma posição fora da tela"
+        push r7
+        loadn r7, #error_message_6
+        call printar_log_r7
+        pop r7
+        jmp mover_player_r7.fim
+
+    mover_player_r7.erro2:
+        error_message_7: string "O posição atual do player é inválida"
+        push r7
+        loadn r7, #error_message_7
+        call printar_log_r7
+        pop r7
+        jmp mover_player_r7.fim
+
+; ***************************************
+; *            SPAWNAR WAVE             *
+; ***************************************
+spawnar_wave:
+    push r0
+    push r1
+    push r2
+    push r3
+    push r4
+    push r5
+    push r6
+    push r7
+
+    load r0, WaveCounter ; qual wave que tá, max é 9 mas pode ser mais
+
+    loadn r1, #9
+    cmp r0, r1
+    jgr spawnar_wave.max-atingido
+
+    spawnar_wave.setou-counter:
+
+    loadn r1, #Waves
+    add r1, r1, r0
+    loadi r2, r1 ; número de zumbis para spawnar nessa wave
+
+    load r3, RandomPosZombiesPointer
+
+    spawnar_wave.loop:        
+        loadn r1, #29 ; existem no máximo 30 valores aleatórios
+
+        cmp r3, r1
+        jgr spawnar_wave.zerar-pointer ; se o pointer for maior que a quantidade de números
+
+        spawnar_wave.loop-zerou-pointer:
+
+        loadn r4, #RandomPosForZombies
+        add r4, r4, r3 ; pega a pos aleatória usando pointer
+        loadi r7, r4 ; carrega ela
+
+        loadn r6, #Screen
+        add r6, r6, r7
+        loadi r4, r6 ; o que tem nessa posição que vou spawnar o zumbi
+        load r1, EmptyChar
+        cmp r1, r4
+        jne spawnar_wave.loop.fim
+
+        ; mudança de dados começa
+
+        load r5, ZombieChar
+        outchar r5, r7 ; escrevee na tela o zumbi
+
+        loadn r4, r2 ; as posições vão até 19, e o r2 vai até 20
+        dec r4
+
+        loadn r5, #ZombiePos
+        add r5, r5, r4
+        storei r5, r7 ; bota no zumbi a pos aleatória
+
+        storei r6, r5 ; bota na tela o zumbi
+
+        spawnar_wave.loop.fim:
+            inc r3
+            dec r2
+            jz spawnar_wave.fim
+
+    spawnar_wave.fim:
+        load r0, WaveCounter
+        inc r0
+        store WaveCounter, r0
+
+        store RandomPosZombiesPointer, r3
+
+        pop r7
+        pop r6
+        pop r5
+        pop r4
+        pop r3
+        pop r2
+        pop r1
+        pop r0
+        rts
+
+    spawnar_wave.max-atingido:
+        loadn r0, #9
+        jmp spawnar_wave.setou-counter
+
+    spawnar_wave.zerar-pointer:
+        loadn r3, #0
+        store RandomPosZombiesPointer, r3
+        jmp spawnar_wave.loop-zerou-pointer
+
+
+; ***************************************
+; *      MOVER ZUMBIS A CADA LOOP       *
+; ***************************************
+mover_zumbis_por_loop:
+
+
+    loadn r0, #ZombiePos
+    loadn r1, #20
+    loadn r3, #6900
+
+    mover_zumbis_por_loop.loop:
+        loadi r4, r0
+        cmp r4, r3
+        jeq mover_zumbis_por_loop.loop.fim ; zumbi sem posição
+
+        ; linha do zumbi
+        ; coluna do zumbi
+
+
+        mover_zumbis_por_loop.loop.fim:
+            inc r0
+            dec r1
+            jz mover_zumbis_por_loop.fim
+
+    mover_zumbis_por_loop.fim:
 
 printar_log_r7:
     push r0
