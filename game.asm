@@ -1652,15 +1652,48 @@ mover_zumbis_por_loop:
 
     loadn r0, #ZombiePos
     loadn r1, #20
-    loadn r3, #6900
+    loadn r2, #6900
 
     mover_zumbis_por_loop.loop:
-        loadi r4, r0
-        cmp r4, r3
+        loadi r3, r0 ; pos zumbi
+        cmp r3, r2
         jeq mover_zumbis_por_loop.loop.fim ; zumbi sem posição
 
-        ; linha do zumbi
-        ; coluna do zumbi
+        loadn r4, #40
+        div r5, r3, r4; linha do zumbi
+        mod r6, r3, r4; coluna do zumbi
+
+        push r1
+
+        load r5, PlayerPos ; pos player
+        div r1, r5, r4; linha do player
+        mod r7, r5, r4; coluna do player
+
+        cmp r5, r1
+        jeq mover_horizontal
+        jle mover_baixo
+        
+
+        mover_vertical:
+            mover_cima:
+            push r0
+            push r1
+            push r2
+
+            loadn
+            jmp mover_vertical.fim
+
+            mover_baixo:
+
+            mover_vertical.fim:
+
+        mover_horizontal:
+            mover_esquerda:
+
+            mover_direita:
+
+            mover_horizontal.fim:
+
 
 
         mover_zumbis_por_loop.loop.fim:
