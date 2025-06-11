@@ -1573,9 +1573,9 @@ spawnar_wave:
 
     loadn r1, #9
     cmp r0, r1
-    jgr spawnar_wave.max_atingido
+    jgr spawnar_wave.max-atingido
 
-    spawnar_wave.setou_counter:
+    spawnar_wave.setou-counter:
 
     loadn r1, #Waves
     add r1, r1, r0
@@ -1587,9 +1587,9 @@ spawnar_wave:
         loadn r1, #29 ; existem no máximo 30 valores aleatórios
 
         cmp r3, r1
-        jgr spawnar_wave.zerar_pointer ; se o pointer for maior que a quantidade de números
+        jgr spawnar_wave.zerar-pointer ; se o pointer for maior que a quantidade de números
 
-        spawnar_wave.loop_zerou_pointer:
+        spawnar_wave.loop-zerou-pointer:
 
         loadn r4, #RandomPosForZombies
         add r4, r4, r3 ; pega a pos aleatória usando pointer
@@ -1607,7 +1607,7 @@ spawnar_wave:
         load r5, ZombieChar
         outchar r5, r7 ; escrevee na tela o zumbi
 
-        mov r4, r2 ; as posições vão até 19, e o r2 vai até 20
+        loadn r4, r2 ; as posições vão até 19, e o r2 vai até 20
         dec r4
 
         loadn r5, #ZombiesPos
@@ -1620,8 +1620,6 @@ spawnar_wave:
         inc r3
         dec r2
         jz spawnar_wave.fim
-
-        jmp spawnar_wave.loop
 
     spawnar_wave.fim:
     load r0, WaveCounter
@@ -1640,14 +1638,14 @@ spawnar_wave:
     pop r0
     rts
 
-    spawnar_wave.max_atingido:
+    spawnar_wave.max-atingido:
         loadn r0, #9
-        jmp spawnar_wave.setou_counter
+        jmp spawnar_wave.setou-counter
 
-    spawnar_wave.zerar_pointer:
+    spawnar_wave.zerar-pointer:
         loadn r3, #0
         store RandomPosZombiesPointer, r3
-        jmp spawnar_wave.loop_zerou_pointer
+        jmp spawnar_wave.loop-zerou-pointer
 
 
 ; ***************************************
@@ -1721,7 +1719,7 @@ mover_zumbis_por_loop:
 
         loadn r6, #20 ; como vai decrescendo e a lista vai crescendo, precisa disso
         sub r6, r6, r1 ; achar o zumbi que precisa mover
-        mov r7, r3 ; a nova posicao calculada que nunca vai ser a mesma do player
+        loadn r7, r3 ; a nova posicao calculada que nunca vai ser a mesma do player
         call mover_zumbi_r6_r7
 
         mover_zumbis_por_loop.loop.fim:
