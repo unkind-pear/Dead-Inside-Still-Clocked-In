@@ -1,3 +1,5 @@
+jmp main
+
 ; ***************************************
 ; *              VARIÁVEIS              *
 ; ***************************************
@@ -1283,10 +1285,6 @@ WaveCounter: var #1 ; qual wave que tá, max é 9 mas pode ser mais
 
 JustMovedPlayer: var #1 ; 1 para ja moveu e 0 para nao moveu
 
-TimeInSecondsBy10: var #1 ; 1/10 de segundo
-
-jmp main ;--------------------------------------------------------------JMP MAIN
-
 ; ***************************************
 ; *       PRINTAR GRÁFICO NORMAL        *
 ; ***************************************
@@ -1301,7 +1299,7 @@ printar_grafico_NORMAL_r7_r6:
     push r2
     push r4
 
-    loadn r0, #0 ; linha de onde começa na tela
+    loadn r0, #0 ; linha de onde comeca na tela
     loadn r2, #'\0' ; indica o fim da string
     loadn r4, #1200 ; limite da tela
 
@@ -1350,10 +1348,10 @@ printar_grafico_CUSTOM_r7_r6:
     push r3
     push r4
 
-    loadn r0, #0 ; onde começa escrevendo na tela
+    loadn r0, #0 ; onde comeca escrevendo na tela
     loadn r2, #1200 ; máximo de linhas da tela
     loadn r3, #0 ; para comparar na flag de apagar o que está em baixo
-    loadn r4, #32 ; código do espaço
+    loadn r4, #32 ; código do espaco
 
     cmp r6, r3
     jeq loop_de_outchar_normal
@@ -1440,16 +1438,16 @@ mover_zumbi_r6_r7:
     cmp r4, r3
     jne  mover_zumbi_r6_r7.fim ; já tem gente lá
 
-    ; a partir daqui, existe mudança nos dados
+    ; a partir daqui, existe mudanca nos dados
 
     load r5, ZombieChar
     outchar r5, r7
     outchar r3, r1
 
-    storei r2, r5 ; guarda na tela o zumbi na nova posição
+    storei r2, r5 ; guarda na tela o zumbi na nova posicao
     loadn r2, #Screen
-    add r2, r2, r1 ; soma o posição antiga
-    storei r2, r3 ; bota vazio na posição antiga
+    add r2, r2, r1 ; soma o posicao antiga
+    storei r2, r3 ; bota vazio na posicao antiga
 
     storei r0, r7 ; atualiza o ZombiePos
 
@@ -1463,7 +1461,7 @@ mover_zumbi_r6_r7:
     rts
 
     mover_zumbi_r6_r7.erro:
-        error_message_4: string "Tentou mover um zumbi que não existe (só aceita de 0 a 19)"
+        error_message_4: string "Tentou mover um zumbi que nao existe (só aceita de 0 a 19)"
         push r7
         loadn r7, #error_message_4
         call printar_log_r7
@@ -1471,7 +1469,7 @@ mover_zumbi_r6_r7:
         jmp mover_zumbi_r6_r7.fim
 
     mover_zumbi_r6_r7.erro2:
-        error_message_2: string "Tentou mover o zumbi para uma posição fora da tela"
+        error_message_2: string "Tentou mover o zumbi para uma posicao fora da tela"
         push r7
         loadn r7, #error_message_2
         call printar_log_r7
@@ -1479,7 +1477,7 @@ mover_zumbi_r6_r7:
         jmp mover_zumbi_r6_r7.fim
 
     mover_zumbi_r6_r7.erro3:
-        error_message_5: string "O zumbi requisitado possui posição vazia"
+        error_message_5: string "O zumbi requisitado possui posicao vazia"
         push r7
         loadn r7, #error_message_5
         call printar_log_r7
@@ -1521,16 +1519,16 @@ mover_player_r7:
     cmp r4, r3
     jne  mover_player_r7.fim ; já tem gente lá
 
-    ; a partir daqui, existe mudança nos dados
+    ; a partir daqui, existe mudanca nos dados
 
     load r5, PlayerChar
     outchar r5, r7
     outchar r3, r0
 
-    storei r2, r5 ; guarda na tela o player na nova posição
+    storei r2, r5 ; guarda na tela o player na nova posicao
     loadn r2, #Screen
-    add r2, r2, r0 ; soma o posição antiga
-    storei r2, r3 ; bota vazio na posição antiga
+    add r2, r2, r0 ; soma o posicao antiga
+    storei r2, r3 ; bota vazio na posicao antiga
 
     store PlayerPos, r7 ; atualiza o PlayerPos
 
@@ -1543,7 +1541,7 @@ mover_player_r7:
         rts
 
     mover_player_r7.erro:
-        error_message_6: string "Tentou mover o player para uma posição fora da tela"
+        error_message_6: string "Tentou mover o player para uma posicao fora da tela"
         push r7
         loadn r7, #error_message_6
         call printar_log_r7
@@ -1551,7 +1549,7 @@ mover_player_r7:
         jmp mover_player_r7.fim
 
     mover_player_r7.erro2:
-        error_message_7: string "O posição atual do player é inválida"
+        error_message_7: string "O posicao atual do player é inválida"
         push r7
         loadn r7, #error_message_7
         call printar_log_r7
@@ -1599,17 +1597,17 @@ spawnar_wave:
 
         loadn r6, #Screen
         add r6, r6, r7
-        loadi r4, r6 ; o que tem nessa posição que vou spawnar o zumbi
+        loadi r4, r6 ; o que tem nessa posicao que vou spawnar o zumbi
         load r1, EmptyChar
         cmp r1, r4
         jne spawnar_wave.loop.fim
 
-        ; mudança de dados começa
+        ; mudanca de dados comeca
 
         load r5, ZombieChar
         outchar r5, r7 ; escrevee na tela o zumbi
 
-        mov r4, r2 ; as posições vão até 19, e o r2 vai até 20
+        mov r4, r2 ; as posicões vao até 19, e o r2 vai até 20
         dec r4
 
         loadn r5, #ZombiesPos
@@ -1672,7 +1670,7 @@ mover_zumbis_por_loop:
     mover_zumbis_por_loop.loop:
         loadi r3, r0 ; pos zumbi
         cmp r3, r2
-        jeq mover_zumbis_por_loop.loop.fim ; zumbi sem posição
+        jeq mover_zumbis_por_loop.loop.fim ; zumbi sem posicao
 
         loadn r4, #40
 
@@ -1694,7 +1692,7 @@ mover_zumbis_por_loop:
             mover_cima:
             push r0
             loadn r0, #40
-            add r3, r3, r0
+            sub r3, r3, r0
             pop r0
 
             jmp mover_vertical.fim
@@ -1702,7 +1700,7 @@ mover_zumbis_por_loop:
             mover_baixo:
             push r0
             loadn r0, #40
-            sub r3, r3, r0
+            add r3, r3, r0
             pop r0
 
             mover_vertical.fim:
@@ -1853,6 +1851,8 @@ main:
     ;loadn r0, #'r'
     ;store FacingDirection, r0
 
+    ; 10 000 000 = 10 segundos (10 Mhz CPU)
+
     loadn r0, #0
     store RandomPosZombiesPointer, r0
 
@@ -1865,46 +1865,72 @@ main:
     loadn r0, #32
     store EmptyChar, r0
 
+    loadn r0, #0
+    store JustMovedPlayer, r0
+
+    loadn r0, #599
+    store PlayerPos, r0
+
+    loadn r0, #Screen
+    loadn r1, #599
+    add r0, r0, r1
+
+    loadn r2, #10
+    storei r0, r2
+
+    store PlayerChar, r2
+    outchar r2, r1
+
     call spawnar_wave
 
-    loadn r2, #0
-    store Time, r0
+    loadn r0, #100000 ; 0.1 seconds
+    loadn r1, #10000 ; 0.01 seconds
+    loadn r2, #0 ; counter
+    loadn r3, #0 ; TimeInDeciseconds
+    loadn r4, #0 ; TimeInCentisecond
 
-    loadn r0, #0
-
-    loadn r1, #1000000
 game_loop:
-    inc r0
-    cmp r0, r1
-    jeq update_time
+    mod r7, r2, r0
+    jnz proxima_etapa_tempo
 
-    jmp game_loop
+    inc r3
+    inc r4
+    loadn r2, #0 ; zera counter pra nao estourar
 
-    update_time:
-    inc r2
-    loadn r0, #0
-    store TimeInSecondsBy10, r2
+    jmp proxima_etapa_tempo2
+
+    proxima_etapa_tempo:
+    mod r7, r2, r1
+    jnz proxima_etapa_tempo2
+
+    inc r4
+
+    proxima_etapa_tempo2:
+
+    load r5, JustMovedPlayer
+    loadn r6, #1
+    cmp r5, r6
+    jne pular_resetar_movimento_player
+
+    loadn r7, #10 ; 0.1 seconds
+    mod r7, r4, r7
+    jnz pular_resetar_movimento_player
+
+    loadn r7, #0
+    store JustMovedPlayer, r7
+
+    pular_resetar_movimento_player:
 
     call mover_player_por_loop
 
-    loadn r5, #20
-    cmp r5, r2
-    jne pular_zumbis
+    loadn r7, #20 ; 2 segundos
+    mod r7, r3, r7
+    jnz game_loop.fim
 
     call mover_zumbis_por_loop
 
-    pular_zumbis:
-
-    loadn r5, #1000
-    cmp r5, r2
-
-    jeq zerar_time
-
-    jmp game_loop
-    
-    zerar_time:
-    loadn r2, #0
-    store TimeInSecondsBy10, r2
+    game_loop.fim:
+    inc r2 ; incrementa contador de tempo
 
     jmp game_loop
 
