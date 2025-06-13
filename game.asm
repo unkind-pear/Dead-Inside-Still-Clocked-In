@@ -1283,6 +1283,8 @@ WaveCounter: var #1 ; qual wave que tá, max é 9 mas pode ser mais
 
 JustMovedPlayer: var #1 ; 1 para ja moveu e 0 para nao moveu
 
+TimeInSecondsBy10: var #1 ; 1/10 de segundo
+
 jmp main ;--------------------------------------------------------------JMP MAIN
 
 ; ***************************************
@@ -1865,7 +1867,46 @@ main:
 
     call spawnar_wave
 
-;game_loop:
+    loadn r2, #0
+    store Time, r0
+
+    loadn r0, #0
+
+    loadn r1, #1000000
+game_loop:
+    inc r0
+    cmp r0, r1
+    jeq update_time
+
+    jmp game_loop
+
+    update_time:
+    inc r2
+    loadn r0, #0
+    store TimeInSecondsBy10, r2
+
+    call mover_player_por_loop
+
+    loadn r5, #20
+    cmp r5, r2
+    jne pular_zumbis
+
+    call mover_zumbis_por_loop
+
+    pular_zumbis:
+
+    loadn r5, #1000
+    cmp r5, r2
+
+    jeq zerar_time
+
+    jmp game_loop
+    
+    zerar_time:
+    loadn r2, #0
+    store TimeInSecondsBy10, r2
+
+    jmp game_loop
 
 ;stop_error_loop:
     
