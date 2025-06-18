@@ -1750,7 +1750,8 @@ mover_player_por_loop:
 
     load r7, PlayerPos
 
-    load r0, JustMovedPlayer
+    ;load r0, JustMovedPlayer
+    loadn r0, #0
     loadn r1, #1
     cmp r0, r1
     jeq mover_player_por_loop.fim
@@ -1891,46 +1892,46 @@ main:
 
 game_loop:
     mod r7, r2, r0
-    jnz proxima_etapa_tempo
+    ;jnz proxima_etapa_tempo
 
     inc r3
     inc r4
     loadn r2, #0 ; zera counter pra nao estourar
 
-    jmp proxima_etapa_tempo2
+    ;jmp proxima_etapa_tempo2
 
     proxima_etapa_tempo:
     mod r7, r2, r1
-    jnz proxima_etapa_tempo2
+    ;jnz proxima_etapa_tempo2
 
     inc r4
 
     proxima_etapa_tempo2:
 
-    load r5, JustMovedPlayer
-    loadn r6, #1
-    cmp r5, r6
-    jne pular_resetar_movimento_player
+    ;load r5, JustMovedPlayer
+    ;loadn r6, #1
+    ;cmp r5, r6
+    ;jne pular_resetar_movimento_player
 
-    loadn r7, #10 ; 0.1 seconds
-    mod r7, r4, r7
-    jnz pular_resetar_movimento_player
+    ;loadn r7, #10 ; 0.1 seconds
+    ;mod r7, r4, r7
+    ;jnz pular_resetar_movimento_player
 
-    loadn r7, #0
-    store JustMovedPlayer, r7
+    ;loadn r7, #0
+    ;store JustMovedPlayer, r7
 
     pular_resetar_movimento_player:
 
     call mover_player_por_loop
 
-    loadn r7, #20 ; 2 segundos
-    mod r7, r3, r7
-    jnz game_loop.fim
+    ;loadn r7, #20 ; 2 segundos
+    ;mod r7, r3, r7
+    ;jnz game_loop.fim
 
     call mover_zumbis_por_loop
 
     game_loop.fim:
-    inc r2 ; incrementa contador de tempo
+    ;inc r2 ; incrementa contador de tempo
 
     jmp game_loop
 
