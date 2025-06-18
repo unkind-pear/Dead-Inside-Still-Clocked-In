@@ -3,11 +3,11 @@ jmp main
 ; ***************************************
 ; *              VARIÁVEIS              *
 ; ***************************************
-ZombieChar: var #1
-PlayerChar: var #1
-BulletChar: var #1
-EmptyChar: var #1
-Screen: var #1200 
+ZombieChar: var #1 ; define o catactere do zumbi
+PlayerChar: var #1 ; define o catactere do player
+BulletChar: var #1 ; define o catactere da bala
+EmptyChar: var #1 ; define o catactere da vazio
+Screen: var #1200 ; guarda os caracteres da tela
     static Screen + #0, #32
     static Screen + #1, #32
     static Screen + #2, #32
@@ -1208,7 +1208,7 @@ Screen: var #1200
     static Screen + #1197, #32
     static Screen + #1198, #32
     static Screen + #1199, #32
-ZombiesPos: var #20
+ZombiesPos: var #20 ; guarda a posição de até 20 zumbis (máximo de wave)
     static ZombiesPos + #0, #6900
     static ZombiesPos + #1, #6900
     static ZombiesPos + #2, #6900
@@ -1229,15 +1229,15 @@ ZombiesPos: var #20
     static ZombiesPos + #17, #6900
     static ZombiesPos + #18, #6900
     static ZombiesPos + #19, #6900
-PlayerPos: var #1
-BulletPos: var #1
+PlayerPos: var #1 ; guarda a posição do player
+BulletPos: var #1 ; guarda a posição da bala
 
 DelayToShoot: var #1
 DelayToMovePlayer: var #1
 DelayToWrite: var #1
 DelayToMoveZombies: var #1
 
-RandomPosForZombies: var #30
+RandomPosForZombies: var #30 ; guarda 30 posições aleatórias para os zumbis spawnarem
     static RandomPosForZombies + #0, #230
     static RandomPosForZombies + #1, #1175
     static RandomPosForZombies + #2, #474
@@ -1268,8 +1268,8 @@ RandomPosForZombies: var #30
     static RandomPosForZombies + #27, #1170
     static RandomPosForZombies + #28, #124
     static RandomPosForZombies + #29, #871
-FacingDirection: var #1
-RandomPosZombiesPointer: var #1
+FacingDirection: var #1 ; onde o player estaria "olhando" para o tiro ir
+RandomPosZombiesPointer: var #1 ; pointer pra lista de posições
 Waves: var #10 ; número da wave e quantos zumbis vai ter nela
     static Waves + #0, #3
     static Waves + #1, #3
@@ -1284,6 +1284,8 @@ Waves: var #10 ; número da wave e quantos zumbis vai ter nela
 WaveCounter: var #1 ; qual wave que tá, max é 9 mas pode ser mais
 
 JustMovedPlayer: var #1 ; 1 para ja moveu e 0 para nao moveu
+
+Tick: var #1 ; cada tick é 0.5 segundos
 
 ; ***************************************
 ; *       PRINTAR GRÁFICO NORMAL        *
@@ -1840,7 +1842,30 @@ printar_log_r7:
         pop r0
         rts
 
+; ***************************************
+; *               DELAY                 *
+; ***************************************
+delay_0_5s:
+    push r0
+    push r1
 
+    loadn r0, #250       ; outer loop
+delay_outer:
+    loadn r1, #10000     ; inner loop
+delay_inner:
+    nop                  ; perde tempo! ebaaa!
+    nop
+    sub r1, r1, #1
+    jne delay_inner
+    sub r0, r0, #1
+    jne delay_outer
+
+    pop r1
+    pop r0
+    rts
+
+
+; TODO LIST (deletar isso depois)
 ; posicao inicial player 599
 ; precisa sertar o JustMovedPlayer para 0 depois do delay
 ; delay para chamar a funcao de mover zumbis a cada loop
