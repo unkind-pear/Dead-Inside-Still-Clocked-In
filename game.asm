@@ -1926,62 +1926,65 @@ mover_tiros_por_loop:
     push r6
     push r7
 
-    loadn r0, #ShotsPos
-    loadn r1, #ShotsDir
-    loadn r2, #6900
+    ; bota r5 e r6 pra já enviar para o mover_tiro_r5_r6_r7
+    loadn r5, #ShotsPos
+    loadn r6, #ShotsDir
+
+    loadn r4, #6900
 
     mover_tiros_por_loop.loop:
-        loadi r3, r1
-        cmp r3, r2
+        loadi r0, r5
+        cmp r0, r4
         jeq mover_tiros_por_loop.loop.fim
 
-        loadi r4, r1 ; direcao da bala 0 -> direita, 1 -> cima, 2 -> esquerda, 3 -> baixo
+        loadi r1, r6 ; direcao da bala 0 -> direita, 1 -> cima, 2 -> esquerda, 3 -> baixo
 
-        loadn r5, #0
-        cmp r4, r5
+        ; mover para a direção
+        loadn r2, #0
+        cmp r2, r1
         jeq mover_t_direita
-
-        loadn r5, #1
-        cmp r4, r5
+        loadn r2, #1
+        cmp r2, r1
         jeq mover_t_cima
-
-        loadn r5, #2
-        cmp r4, r5
+        loadn r2, #2
+        cmp r2, r1
         jeq mover_t_esquerda
-
-        loadn r5, #3
-        cmp r4, r5
+        loadn r2, #3
+        cmp r2, r1
         jeq mover_t_baixo
 
         mover_t_direita:
-            inc r3
+            inc r0
             jmp realizar_t_movimento
         mover_t_cima:
-            loadn r5, #40
-            sub r3, r3, r5
+            loadn r1, #40
+            sub r0, r0, r1
             jmp realizar_t_movimento
         mover_t_esquerda:
-            dec r3
+            dec r0
             jmp realizar_t_movimento
         mover_t_baixo:
-            loadn r5, #40
-            add r3, r3, r5
+            loadn r1, #40
+            add r0, r0, r1
             jmp realizar_t_movimento
             
         realizar_t_movimento:
-            mov r5, r0
-            mov r6, r4
-            mov r7, r3
+            mov r7, r0
             call mover_tiro_r5_r6_r7
 
         mover_tiros_por_loop.loop.fim:
-        inc r0
-        inc r1
+        ; ir para práxima pos e dir
+        inc r5
+        inc r6
 
-        loadn r5, #ShotsPos
-        loadn r6, #5
-        add r5, r5, r6
+        push r0
+        push r1
+        loadn r0, #ShotsPos
+        loadn r1, #5
+        add r0, r0, r1
         cmp r5, r0
+        pop r1
+        pop r0
         jeq mover_tiros_por_loop.fim
 
         jmp mover_tiros_por_loop.loop
@@ -2001,8 +2004,8 @@ mover_tiros_por_loop:
 ; *             MOVER TIRO              *
 ; ***************************************
 ; r5 = local da posicao do tiro na lista
-; r6 = direcao do tiro
-; r7 = posicao nova para mover
+; r6 = local da direção do tiro na lista
+; r7 = posição nova para mover
 mover_tiro_r5_r6_r7:
     push r0
     push r1
@@ -2010,71 +2013,122 @@ mover_tiro_r5_r6_r7:
     push r3
     push r4
 
-    loadn r0, #ShotsPos
+    ; checar se o local na lista da posição da bala é válida
+    loadn r0, #ShotsPos ; carrega a lista
     loadn r1, #ShotsPos
     loadn r2, #4
-    add r1, r1, r2
+    add r1, r1, r2 ; máximo da lista
+
     cmp r5, r0
     jle mover_tiro_r5_r6_r7.erro
     cmp r5, r1
     jgr mover_tiro_r5_r6_r7.erro
 
-    loadn r0, #0
-    loadn r1, #1199
+    ; checar se a posição antiga está na borda da tela (pense nos cenários, não tem como o player dar tiro aí e não ir para fora da tela)
+    ; assim, se a posição está, significa que a bala vai sair da tela e deve dar despawn
+    loadi r0, r5 ; carrega posição antiga do tiro
+    loadn r1, #40
 
-    cmp r7, r0
-    jle apagar_tiro
-    cmp r7, r1
-    jgr apagar_tiro
+    mod r2, r0, r1 ; coluna que está a bala (0 - 39)
+    div r3, r0, r1 ; linha que está a bala (0 - 29)
 
+    ; checar se esta na primeira / última linha ou coluna (borda da tela)
     loadn r4, #0
-    cmp r4, r6
-    jeq mover_tiro_r5_r6_r7_direita
+    cmp r4, r2
+    jeq apagar_tiro
+    cmp r4, r3
+    jeq apagar_tiro
+    loadn r4, #39
+    cmp r4, r2
+    jeq apagar_tiro
+    loadn r4, #29
+    cmp r4, r3
+    jeq apagar_tiro
 
-    loadn r4, #1
-    cmp r4, r6
-    jeq mover_tiro_r5_r6_r7_cima
+    ; checar se o local na lista da direção da bala é válida
+    loadn r0, #ShotsDir ; carrega a lista
+    loadn r1, #ShotsDir
+    loadn r2, #4
+    add r1, r1, r2 ; máximo da lista
 
-    loadn r4, #2
-    cmp r4, r6
-    jeq mover_tiro_r5_r6_r7_esquerda
+    cmp r6, r0
+    jle mover_tiro_r5_r6_r7.erro2
+    cmp r6, r1
+    jgr mover_tiro_r5_r6_r7.erro2
 
-    loadn r4, #3
-    cmp r4, r6
-    jeq mover_tiro_r5_r6_r7_baixo
+    ; checar se a direção da bala é válida
+    loadi r0, r6
 
-    mover_tiro_r5_r6_r7_direita:
-    load r4, BulletCharRight
-    jmp continuar_mover_tiro
-    mover_tiro_r5_r6_r7_cima:
-    load r4, BulletCharUp
-    jmp continuar_mover_tiro
-    mover_tiro_r5_r6_r7_esquerda:
-    load r4, BulletCharLeft
-    jmp continuar_mover_tiro
-    mover_tiro_r5_r6_r7_baixo:
-    load r4, BulletCharDown
+    loadn r1, #0
+    cmp r1, r0
+    jeq logica_de_movimentar_t
+    loadn r1, #1
+    cmp r1, r0
+    jeq logica_de_movimentar_t
+    loadn r1, #2
+    cmp r1, r0
+    jeq logica_de_movimentar_t
+    loadn r1, #3
+    cmp r1, r0
+    jeq logica_de_movimentar_t
 
-    continuar_mover_tiro:
+    jmp mover_tiro_r5_r6_r7.erro3
 
-    loadn r2, #Screen
-    add r2, r2, r0
-    loadi r1, r2
-    load r3, EmptyChar
-    cmp r3, r1
-    jeq mover_tiro_r5_r6_r7.fim
-
-    ; agora vai mudar dados
+    logica_de_movimentar_t:
+    ; lógica de movimentação do tiro realmente
+    ; r0 -> pos antigo tiro
     loadi r0, r5
-    outchar r3, r0
+    ; r1 -> dir do tiro (0, 1, 2, 3)
+    loadi r1, r6
+    ; r7 -> pos nova
 
-    outchar r4, r7
+    ; achar caractere pra usar
+    loadn r2, #0
+    cmp r2, r1
+    jeq mover_t_direita2
+    loadn r2, #1
+    cmp r2, r1
+    jeq mover_t_cima2
+    loadn r2, #2
+    cmp r2, r1
+    jeq mover_t_esquerda2
+    loadn r2, #3
+    cmp r2, r1
+    jeq mover_t_baixo2
 
-    storei r2, r4
+
+    mover_t_direita2:
+        load r1, BulletCharRight
+        jmp logica_de_movimentar_t_continuar
+    mover_t_cima2:
+        load r1, BulletCharUp
+        jmp logica_de_movimentar_t_continuar
+    mover_t_esquerda2:
+        load r1, BulletCharLeft
+        jmp logica_de_movimentar_t_continuar
+    mover_t_baixo2:
+        load r1, BulletCharDown
+
+    logica_de_movimentar_t_continuar:
+    ; checar se tem algo lá
+    loadn r2, #Screen
+    add r2, r2, r7
+    loadi r3, r2
+    load r4, EmptyChar
+    cmp r3, r4
+    jne tiro_mata_player_ou_zumbi
+
+    ; dá outchar nas coisas
+    outchar r4, r0
+    outchar r1, r7 ; caractere na pos nova
+
+    ; atualiza as posições da tela
+    storei r2, r1
     loadn r2, #Screen
     add r2, r2, r0
-    storei r2, r3
+    storei r2, r4
 
+    ; atualiza a lista de pos
     storei r5, r7
 
     mover_tiro_r5_r6_r7.fim:
@@ -2085,19 +2139,53 @@ mover_tiro_r5_r6_r7:
     pop r0
     rts
 
+    tiro_mata_player_ou_zumbi:
+        loadn r0, #ZombiesPos
+        tiro_mata_player_ou_zumbi.loop:
+            loadi r1, r0
+            cmp r1, r7
+            inc r0
+            jne tiro_mata_player_ou_zumbi.loop
+            dec r0
+
+        ; sai o r0 com o zumbi que está lá e r1 com a pos
+
+        ; limpando as coiasas da tela
+        loadn r2, #Screen
+        add r2, r2, r1
+        load r3, EmptyChar
+        outchar r3, r1 ; printa vazio no pos do zumbi
+        storei r2, r3
+
+        loadi r1, r5 ; pos do tiro
+        loadn r2, #Screen
+        add r2, r2, r1
+        outchar r3, r1 ; printa vazoi na pos da bala
+        storei r2, r3
+
+        loadn r1, #6900
+        storei r0, r1 ; limpa a pos do zumbi
+        storei r5, r1 ; limpa a pos do tiro
+        storei r6, r1 ; limpa a dir do tiro
+
+        jmp mover_tiro_r5_r6_r7.fim
+
     apagar_tiro:
-    loadi r0, r5
-    load r1, EmptyChar
-    outchar r1, r0
+        loadi r0, r5 ; carregar posição do tiro
+        load r1, EmptyChar
+        outchar r1, r0
 
-    loadn r2, #Screen
-    add r2, r2, r0
-    storei r2, r1 ; colocar empty char na tela
+        ; atualizar para vazio na pos do tiro
+        loadn r2, #Screen
+        add r2, r2, r0
+        storei r2, r1 ; colocar empty char na tela
 
-    loadn r1, #6900
-    storei r5, r1
+        ; limpar ShotsPos e ShotsDir
+        loadn r1, #6900
+        storei r5, r1
+        storei r6, r1
 
-    jmp mover_tiro_r5_r6_r7.fim
+        jmp mover_tiro_r5_r6_r7.fim
 
     mover_tiro_r5_r6_r7.erro:
         error_message_9: string "Tentou mover um tiro fora da lista de pos"
@@ -2106,6 +2194,23 @@ mover_tiro_r5_r6_r7:
         call printar_log_r7
         pop r7
         jmp mover_tiro_r5_r6_r7.fim
+
+    mover_tiro_r5_r6_r7.erro2:
+        error_message_10: string "Tentou mover uma direcao fora da lista de pos"
+        push r7
+        loadn r7, #error_message_10
+        call printar_log_r7
+        pop r7
+        jmp mover_tiro_r5_r6_r7.fim
+
+    mover_tiro_r5_r6_r7.erro3:
+        error_message_11: string "Direcao dentro da lista de dir nao esta entre 0 e 3"
+        push r7
+        loadn r7, #error_message_11
+        call printar_log_r7
+        pop r7
+        jmp mover_tiro_r5_r6_r7.fim
+
 
 ; ***************************************
 ; *               ATIRAR                *
@@ -2117,100 +2222,79 @@ atirar:
     push r3
     push r4
     push r5
-    push r6
-    push r7
 
     inchar r0
     loadn r1, #'c' ; tecla enter
     cmp r0, r1
     jne atirar.fim
 
-    load r2, FacingDirection
-    loadn r0, #ShotsPos
+    ; checar se pode adiconar mais uma bala
+    loadn r1, #ShotsPos
+    loadn r5, #ShotsDir
+
+    loadn r2, #ShotsPos ; vai ser o máximo da lista
     loadn r3, #5
-    loadn r7, #ShotsPos
-    add r7, r7, r3
-    loadn r5, #6900
-    atirar.loop:
-        loadi r6, r0
-        cmp r6, r5
-        jne atirar.loop.fim
+    add r2, r2, r3
 
-        ; Assume r0 holds the switch value
+    loadn r3, #6900
 
-        loadn r1, #0
-        cmp   r2, r1
-        jeq   case_0
+    atirar.loop_checar:
+        loadi r4, r1
+        cmp r4, r3
+        jeq pode_atirar
 
-        loadn r1, #1
-        cmp   r2, r1
-        jeq   case_1
-
-        loadn r1, #2
-        cmp   r2, r1
-        jeq   case_2
-
-        loadn r1, #3
-        cmp   r2, r1
-        jeq   case_3
-
-        case_0:
-            push r1
-
-            load r1, PlayerPos
-            inc r1
-            storei r0, r1
-
-            pop r1
-            jmp atirar.fim
-
-        case_1:
-            push r1
-            push r2
-
-            load r1, PlayerPos
-            loadn r2, #40
-            sub r1, r1, r2
-            storei r0, r1
-
-            pop r2
-            pop r1
-            jmp atirar.fim
-
-        case_2:
-            push r1
-
-            load r1, PlayerPos
-            dec r1
-            storei r0, r1
-
-            pop r1
-
-            jmp atirar.fim
-
-        case_3:
-            push r1
-            push r2
-
-            load r1, PlayerPos
-            loadn r2, #40
-            add r1, r1, r2
-            storei r0, r1
-
-            pop r2
-            pop r1
-
-            jmp atirar.fim
-
-        atirar.loop.fim:
-        inc r0
-        cmp r1, r0
+        inc r5
+        inc r1
+        cmp r1, r2
         jeq atirar.fim
-        jmp atirar.loop
+
+        jmp atirar.loop_checar
+        
+    ; r1 está setado no livre agora e r5 tmb
+    pode_atirar:
+        load r2, FacingDirection
+
+        ; achar direção
+        loadn r3, #0
+        cmp r3, r2
+        jeq atirar_t_direita
+        loadn r3, #1
+        cmp r3, r2
+        jeq atirar_t_cima
+        loadn r3, #2
+        cmp r3, r2
+        jeq atirar_t_esquerda
+        loadn r3, #3
+        cmp r3, r2
+        jeq atirar_t_baixo
+
+        atirar_t_direita:
+            load r4, PlayerPos
+            inc r4
+            storei r1, r4
+            storei r5, r2
+            jmp atirar.fim
+        atirar_t_cima:
+            load r4, PlayerPos
+            loadn r3, #40
+            sub r4, r4, r3
+            storei r1, r4
+            storei r5, r2
+            jmp atirar.fim
+        atirar_t_esquerda:
+            load r4, PlayerPos
+            dec r4
+            storei r1, r4
+            storei r5, r2
+            jmp atirar.fim
+        atirar_t_baixo:
+            load r4, PlayerPos
+            loadn r3, #40
+            add r4, r4, r3
+            storei r1, r4
+            storei r5, r2
 
     atirar.fim:
-    pop r7
-    pop r6
     pop r5
     pop r4
     pop r3
@@ -2274,8 +2358,8 @@ delay_0_5s:
 ; matar player e matar zumbi
 
 main:
-    ;loadn r0, #'r'
-    ;store FacingDirection, r0
+    loadn r0, #0
+    store FacingDirection, r0
 
     loadn r0, #0
     store RandomPosZombiesPointer, r0
@@ -2283,10 +2367,13 @@ main:
     loadn r0, #13
     store ZombieChar, r0
 
-    loadn r0, #'b'
+    loadn r0, #22
     store BulletCharDown, r0
+    loadn r0, #23
     store BulletCharUp, r0
+    loadn r0, #24
     store BulletCharLeft, r0
+    loadn r0, #15
     store BulletCharRight, r0
 
 
@@ -2319,18 +2406,40 @@ game_loop:
     call delay_0_5s
     inc r0
 
+    call mover_player_por_loop
+
     call atirar
     call mover_tiros_por_loop
-    call mover_player_por_loop
 
     loadn r2, #5
     loadn r3, #0
     mod r1, r0, r2
     cmp r1, r3
-    jne game_loop.fim
+    jne game_loop.continuar
     call mover_zumbis_por_loop
 
+    game_loop.continuar:
+
+    loadn r1, #ZombiesPos
+    loadn r2, #ZombiesPos
+    loadn r3, #20
+    add r2, r2, r3 ; max que pode ir
+    loadn r4, #6900
+
+    game_loop.loop_wave:
+        cmp r2, r1
+        jeq ir_proxima_wave ; viu todos os zumbis e não tem mais
+        loadi r5, r1
+        cmp r5, r4
+        inc r1
+        jeq game_loop.loop_wave ; achou vazio, volta loop
+        jmp game_loop.fim ; achou zumbi vivo
+
+    ir_proxima_wave:
+        call spawnar_wave
+
     game_loop.fim:
+
     load r6, PlayerMorreu
     loadn r7, #1
     cmp r6, r7
