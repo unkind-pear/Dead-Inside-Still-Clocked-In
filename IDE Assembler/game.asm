@@ -5,10 +5,7 @@ jmp main
 ; ***************************************
 ZombieChar: var #1 ; define o catactere do zumbi
 PlayerChar: var #1 ; define o catactere do player
-BulletCharRight: var #1 ; define o catactere da bala
-BulletCharUp: var #1
-BulletCharLeft: var #1
-BulletCharDown: var #1
+BulletChar: var #1 ; define o catactere da bala
 EmptyChar: var #1 ; define o catactere da vazio
 Screen: var #1200 ; guarda os caracteres da tela
     static Screen + #0, #32
@@ -1233,18 +1230,7 @@ ZombiesPos: var #20 ; guarda a posição de até 20 zumbis (máximo de wave)
     static ZombiesPos + #18, #6900
     static ZombiesPos + #19, #6900
 PlayerPos: var #1 ; guarda a posição do player
-ShotsPos: var #5 ; guarda a posição de até 5 balas na tela
-    static ShotsPos + #0, #6900
-    static ShotsPos + #1, #6900
-    static ShotsPos + #2, #6900
-    static ShotsPos + #3, #6900
-    static ShotsPos + #4, #6900
-ShotsDir: var #5 ; 0 -> direita, 1 -> cima, 2 -> esquerda, 3 -> baixo | guarda a direcao de até 5 balas na tela
-    static ShotsDir + #0, #6900
-    static ShotsDir + #1, #6900
-    static ShotsDir + #2, #6900
-    static ShotsDir + #3, #6900
-    static ShotsDir + #4, #6900
+BulletPos: var #1 ; guarda a posição da bala
 
 DelayToShoot: var #1
 DelayToMovePlayer: var #1
@@ -1298,69 +1284,6 @@ Waves: var #10 ; número da wave e quantos zumbis vai ter nela
 WaveCounter: var #1 ; qual wave que tá, max é 9 mas pode ser mais
 
 Tick: var #1 ; cada tick é 0.5 segundos
-PlayerMorreu: var #1 ; checa se o player morreu
-
-TelaGameOverGrafico   : string "oooooooooooooooooooooooooooooooooooooooo"
-TelaGameOverGrafico1  : string "o                                      o"
-TelaGameOverGrafico2  : string "o                                      o"
-TelaGameOverGrafico3  : string "o                                      o"
-TelaGameOverGrafico4  : string "o                                      o"
-TelaGameOverGrafico5  : string "o                                      o"
-TelaGameOverGrafico6  : string "o                                      o"
-TelaGameOverGrafico7  : string "o                                      o"
-TelaGameOverGrafico8  : string "o                                      o"
-TelaGameOverGrafico9  : string "o                                      o"
-TelaGameOverGrafico10 : string "o                                      o"
-TelaGameOverGrafico11 : string "o            o GAME OVER o             o"
-TelaGameOverGrafico12 : string "o                                      o"
-TelaGameOverGrafico13 : string "o                                      o"
-TelaGameOverGrafico14 : string "o       Aperte enter para tentar       o"
-TelaGameOverGrafico15 : string "o              novamente!              o"
-TelaGameOverGrafico16 : string "o                                      o"
-TelaGameOverGrafico17 : string "o                                      o"
-TelaGameOverGrafico18 : string "o                                      o"
-TelaGameOverGrafico19 : string "o                                      o"
-TelaGameOverGrafico20 : string "o                                      o"
-TelaGameOverGrafico21 : string "o                                      o"
-TelaGameOverGrafico22 : string "o                                      o"
-TelaGameOverGrafico23 : string "o                                      o"
-TelaGameOverGrafico24 : string "o                                      o"
-TelaGameOverGrafico25 : string "o                                      o"
-TelaGameOverGrafico26 : string "o                                      o"
-TelaGameOverGrafico27 : string "o                                      o"
-TelaGameOverGrafico28 : string "o                                      o"
-TelaGameOverGrafico29 : string "oooooooooooooooooooooooooooooooooooooooo"
-
-LimpaTelaGrafico   : string "                                        "
-LimpaTelaGrafico1  : string "                                        "
-LimpaTelaGrafico2  : string "                                        "
-LimpaTelaGrafico3  : string "                                        "
-LimpaTelaGrafico4  : string "                                        "
-LimpaTelaGrafico5  : string "                                        "
-LimpaTelaGrafico6  : string "                                        "
-LimpaTelaGrafico7  : string "                                        "
-LimpaTelaGrafico8  : string "                                        "
-LimpaTelaGrafico9  : string "                                        "
-LimpaTelaGrafico10 : string "                                        "
-LimpaTelaGrafico11 : string "                                        "
-LimpaTelaGrafico12 : string "                                        "
-LimpaTelaGrafico13 : string "                                        "
-LimpaTelaGrafico14 : string "                                        "
-LimpaTelaGrafico15 : string "                                        "
-LimpaTelaGrafico16 : string "                                        "
-LimpaTelaGrafico17 : string "                                        "
-LimpaTelaGrafico18 : string "                                        "
-LimpaTelaGrafico19 : string "                                        "
-LimpaTelaGrafico20 : string "                                        "
-LimpaTelaGrafico21 : string "                                        "
-LimpaTelaGrafico22 : string "                                        "
-LimpaTelaGrafico23 : string "                                        "
-LimpaTelaGrafico24 : string "                                        "
-LimpaTelaGrafico25 : string "                                        "
-LimpaTelaGrafico26 : string "                                        "
-LimpaTelaGrafico27 : string "                                        "
-LimpaTelaGrafico28 : string "                                        "
-LimpaTelaGrafico29 : string "                                        "
 
 ; ***************************************
 ; *       PRINTAR GRÁFICO NORMAL        *
@@ -1374,62 +1297,41 @@ printar_grafico_NORMAL_r7_r6:
     push r0
     push r1
     push r2
-    push r3
     push r4
 
-    loadn r0, #0
-    cmp r6, r0
+    loadn r0, #0 ; linha de onde comeca na tela
+    loadn r2, #'\0' ; indica o fim da string
+    loadn r4, #1200 ; limite da tela
 
-    loadn r0, #0 ; caractere onde comeca a tela
-    loadn r1, #'\0' ; indica o fim da string
-    loadn r2, #1200 ; limite da tela
+    loop_printa_linha2:
+        loadi r1, r7
 
-    jeq printar_grafico_NORMAL_r7_r6.loop_n_apagando
+        cmp r1, r2
+        jeq pular_escrever_o_nada2
 
-    printar_grafico_NORMAL_r7_r6.loop_apagando:
-        loadi r3, r7
-        cmp r3, r1
-        jeq pular_fim_de_linha1
+        outchar r1, r0
 
-        outchar r3, r0
-        inc r0
-
-        pular_fim_de_linha1:
+        pular_escrever_o_nada2:
         inc r7
 
-        cmp r0, r2
-        jeq printar_grafico_NORMAL_r7_r6.fim
+        cmp r0, r4
 
-        jmp printar_grafico_NORMAL_r7_r6.loop_apagando
-
-    printar_grafico_NORMAL_r7_r6.loop_n_apagando:
-        loadi r3, r7
-        cmp r3, r1
-        jeq pular_fim_de_linha2
-
-        load r4, EmptyChar
-        cmp r4, r3
-        jeq pular_vazio
-
-        outchar r3, r0
-        pular_vazio:
         inc r0
 
-        pular_fim_de_linha2:
-        inc r7
-
-        cmp r0, r2
         jeq printar_grafico_NORMAL_r7_r6.fim
 
-        jmp printar_grafico_NORMAL_r7_r6.loop_n_apagando
+        cmp r1, r2
+        jne loop_printa_linha2
+
+    inc r0
+    jmp loop_printa_linha2
 
     printar_grafico_NORMAL_r7_r6.fim:
-    pop r4
-    pop r3
-    pop r2
-    pop r1
-    pop r0
-    rts
+        pop r4
+        pop r2
+        pop r1
+        pop r0
+        rts
 
 ; ***************************************
 ; *       PRINTAR GRÁFICO CUSTOM        *
@@ -1694,20 +1596,17 @@ mover_zumbi_r6_r7:
     jeq mover_zumbi_r6_r7.erro3
 
     loadn r2, #Screen
-    add r2, r2, r7 ; soma o pos nova
-
-    loadi r4, r2 ; caractere na pos nova
-    load r3, PlayerChar ; o caractere do player
-    cmp r4, r3
-    jeq  mover_zumbi_r6_r7.matar_player ; o player esta la
-
     load r3, EmptyChar
+
+    add r2, r2, r7
+    loadi r4, r2 ; caractere na pos nova
+
     cmp r4, r3
     jne  mover_zumbi_r6_r7.fim ; já tem gente lá
 
     ; a partir daqui, existe mudanca nos dados
 
-    load r5, ZombieChar ; !!!aqui vai poder mudar para varios caracteres de zumbi
+    load r5, ZombieChar
     outchar r5, r7
     outchar r3, r1
 
@@ -1716,21 +1615,9 @@ mover_zumbi_r6_r7:
     add r2, r2, r1 ; soma o posicao antiga
     storei r2, r3 ; bota vazio na posicao antiga
 
-    storei r6, r7 ; atualiza o ZombiesPos
+    storei r0, r7 ; atualiza o ZombiesPos
 
     mover_zumbi_r6_r7.fim:
-    pop r5
-    pop r4
-    pop r3
-    pop r2
-    pop r1
-    pop r0
-    rts
-
-    mover_zumbi_r6_r7.matar_player:
-    loadn r0, #1
-    store PlayerMorreu, r0
-
     pop r5
     pop r4
     pop r3
@@ -1795,17 +1682,17 @@ mover_zumbis_por_loop:
             jle mover_z_baixo
 
             mover_z_cima:
-            sub r1, r1, r3 ; tira 40 da pos zumbi
+            sub r1, r0, r3 ; tira 40 da pos zumbi
             jmp mover_z_horizontal
             mover_z_baixo:
-            add r1, r1, r3 ; adiciona 40 da pos zumbi
+            add r1, r0, r3 ; adiciona 40 da pos zumbi
 
         mover_z_horizontal:
             mod r4, r1, r3 ; r4 = coluna zumbi
             mod r5, r2, r3 ; r5 = coluna player
 
             cmp r4, r5
-            jeq realizar_z_movimento
+            jeq mover_zumbis_por_loop.loop.fim
             jle mover_z_direita
             
             mover_z_esquerda:
@@ -1830,8 +1717,6 @@ mover_zumbis_por_loop:
         pop r2
         pop r1
         jeq mover_zumbis_por_loop.fim
-
-        jmp mover_zumbis_por_loop.loop
 
     mover_zumbis_por_loop.fim:
     pop r7
@@ -1880,341 +1765,27 @@ mover_player_por_loop:
     mover_player_baixo:
     loadn r1, #40
     add r7, r7, r1
-    loadn r1, #3
-    store FacingDirection, r1
     call mover_player_r7
     jmp mover_player_por_loop.fim
 
     mover_player_cima:
     loadn r1, #40
     sub r7, r7, r1
-    loadn r1, #1
-    store FacingDirection, r1
     call mover_player_r7
     jmp mover_player_por_loop.fim
 
     mover_player_esquerda:
     dec r7
-    loadn r1, #2
-    store FacingDirection, r1
     call mover_player_r7
     jmp mover_player_por_loop.fim
 
     mover_player_direita:
     inc r7
-    loadn r1, #0
-    store FacingDirection, r1
     call mover_player_r7
     jmp mover_player_por_loop.fim
 
     mover_player_por_loop.fim:
     pop r7
-    pop r1
-    pop r0
-    rts
-
-; ***************************************
-; *       MOVER TIRO A CADA LOOP        *
-; ***************************************
-mover_tiros_por_loop:
-    push r0
-    push r1
-    push r2
-    push r3
-    push r4
-    push r5
-    push r6
-    push r7
-
-    loadn r0, #ShotsPos
-    loadn r1, #ShotsDir
-    loadn r2, #6900
-
-    mover_tiros_por_loop.loop:
-        loadi r3, r1
-        cmp r3, r2
-        jeq mover_tiros_por_loop.loop.fim
-
-        loadi r4, r1 ; direcao da bala 0 -> direita, 1 -> cima, 2 -> esquerda, 3 -> baixo
-
-        loadn r5, #0
-        cmp r4, r5
-        jeq mover_t_direita
-
-        loadn r5, #1
-        cmp r4, r5
-        jeq mover_t_cima
-
-        loadn r5, #2
-        cmp r4, r5
-        jeq mover_t_esquerda
-
-        loadn r5, #3
-        cmp r4, r5
-        jeq mover_t_baixo
-
-        mover_t_direita:
-            inc r3
-            jmp realizar_t_movimento
-        mover_t_cima:
-            loadn r5, #40
-            sub r3, r3, r5
-            jmp realizar_t_movimento
-        mover_t_esquerda:
-            dec r3
-            jmp realizar_t_movimento
-        mover_t_baixo:
-            loadn r5, #40
-            add r3, r3, r5
-            jmp realizar_t_movimento
-            
-        realizar_t_movimento:
-            mov r5, r0
-            mov r6, r4
-            mov r7, r3
-            call mover_tiro_r5_r6_r7
-
-        mover_tiros_por_loop.loop.fim:
-        inc r0
-        inc r1
-
-        loadn r5, #ShotsPos
-        loadn r6, #5
-        add r5, r5, r6
-        cmp r5, r0
-        jeq mover_tiros_por_loop.fim
-
-        jmp mover_tiros_por_loop.loop
-
-    mover_tiros_por_loop.fim:
-    pop r7
-    pop r6
-    pop r5
-    pop r4
-    pop r3
-    pop r2
-    pop r1
-    pop r0
-    rts
-
-; ***************************************
-; *             MOVER TIRO              *
-; ***************************************
-; r5 = local da posicao do tiro na lista
-; r6 = direcao do tiro
-; r7 = posicao nova para mover
-mover_tiro_r5_r6_r7:
-    push r0
-    push r1
-    push r2
-    push r3
-    push r4
-
-    loadn r0, #ShotsPos
-    loadn r1, #ShotsPos
-    loadn r2, #4
-    add r1, r1, r2
-    cmp r5, r0
-    jle mover_tiro_r5_r6_r7.erro
-    cmp r5, r1
-    jgr mover_tiro_r5_r6_r7.erro
-
-    loadn r0, #0
-    loadn r1, #1199
-
-    cmp r7, r0
-    jle apagar_tiro
-    cmp r7, r1
-    jgr apagar_tiro
-
-    loadn r4, #0
-    cmp r4, r6
-    jeq mover_tiro_r5_r6_r7_direita
-
-    loadn r4, #1
-    cmp r4, r6
-    jeq mover_tiro_r5_r6_r7_cima
-
-    loadn r4, #2
-    cmp r4, r6
-    jeq mover_tiro_r5_r6_r7_esquerda
-
-    loadn r4, #3
-    cmp r4, r6
-    jeq mover_tiro_r5_r6_r7_baixo
-
-    mover_tiro_r5_r6_r7_direita:
-    load r4, BulletCharRight
-    jmp continuar_mover_tiro
-    mover_tiro_r5_r6_r7_cima:
-    load r4, BulletCharUp
-    jmp continuar_mover_tiro
-    mover_tiro_r5_r6_r7_esquerda:
-    load r4, BulletCharLeft
-    jmp continuar_mover_tiro
-    mover_tiro_r5_r6_r7_baixo:
-    load r4, BulletCharDown
-
-    continuar_mover_tiro:
-
-    loadn r2, #Screen
-    add r2, r2, r0
-    loadi r1, r2
-    load r3, EmptyChar
-    cmp r3, r1
-    jeq mover_tiro_r5_r6_r7.fim
-
-    ; agora vai mudar dados
-    loadi r0, r5
-    outchar r3, r0
-
-    outchar r4, r7
-
-    storei r2, r4
-    loadn r2, #Screen
-    add r2, r2, r0
-    storei r2, r3
-
-    storei r5, r7
-
-    mover_tiro_r5_r6_r7.fim:
-    pop r4
-    pop r3
-    pop r2
-    pop r1
-    pop r0
-    rts
-
-    apagar_tiro:
-    loadi r0, r5
-    load r1, EmptyChar
-    outchar r1, r0
-
-    loadn r2, #Screen
-    add r2, r2, r0
-    storei r2, r1 ; colocar empty char na tela
-
-    loadn r1, #6900
-    storei r5, r1
-
-    jmp mover_tiro_r5_r6_r7.fim
-
-    mover_tiro_r5_r6_r7.erro:
-        error_message_9: string "Tentou mover um tiro fora da lista de pos"
-        push r7
-        loadn r7, #error_message_9
-        call printar_log_r7
-        pop r7
-        jmp mover_tiro_r5_r6_r7.fim
-
-; ***************************************
-; *               ATIRAR                *
-; ***************************************
-atirar:
-    push r0
-    push r1
-    push r2
-    push r3
-    push r4
-    push r5
-    push r6
-    push r7
-
-    inchar r0
-    loadn r1, #'c' ; tecla enter
-    cmp r0, r1
-    jne atirar.fim
-
-    load r2, FacingDirection
-    loadn r0, #ShotsPos
-    loadn r3, #5
-    loadn r7, #ShotsPos
-    add r7, r7, r3
-    loadn r5, #6900
-    atirar.loop:
-        loadi r6, r0
-        cmp r6, r5
-        jne atirar.loop.fim
-
-        ; Assume r0 holds the switch value
-
-        loadn r1, #0
-        cmp   r2, r1
-        jeq   case_0
-
-        loadn r1, #1
-        cmp   r2, r1
-        jeq   case_1
-
-        loadn r1, #2
-        cmp   r2, r1
-        jeq   case_2
-
-        loadn r1, #3
-        cmp   r2, r1
-        jeq   case_3
-
-        case_0:
-            push r1
-
-            load r1, PlayerPos
-            inc r1
-            storei r0, r1
-
-            pop r1
-            jmp atirar.fim
-
-        case_1:
-            push r1
-            push r2
-
-            load r1, PlayerPos
-            loadn r2, #40
-            sub r1, r1, r2
-            storei r0, r1
-
-            pop r2
-            pop r1
-            jmp atirar.fim
-
-        case_2:
-            push r1
-
-            load r1, PlayerPos
-            dec r1
-            storei r0, r1
-
-            pop r1
-
-            jmp atirar.fim
-
-        case_3:
-            push r1
-            push r2
-
-            load r1, PlayerPos
-            loadn r2, #40
-            add r1, r1, r2
-            storei r0, r1
-
-            pop r2
-            pop r1
-
-            jmp atirar.fim
-
-        atirar.loop.fim:
-        inc r0
-        cmp r1, r0
-        jeq atirar.fim
-        jmp atirar.loop
-
-    atirar.fim:
-    pop r7
-    pop r6
-    pop r5
-    pop r4
-    pop r3
-    pop r2
     pop r1
     pop r0
     rts
@@ -2283,13 +1854,6 @@ main:
     loadn r0, #13
     store ZombieChar, r0
 
-    loadn r0, #'b'
-    store BulletCharDown, r0
-    store BulletCharUp, r0
-    store BulletCharLeft, r0
-    store BulletCharRight, r0
-
-
     loadn r0, #0
     store WaveCounter, r0
 
@@ -2313,14 +1877,11 @@ main:
 
     loadn r0, #0
     store Tick, r0
-    store PlayerMorreu, r0
 
 game_loop:
     call delay_0_5s
     inc r0
 
-    call atirar
-    call mover_tiros_por_loop
     call mover_player_por_loop
 
     loadn r2, #5
@@ -2331,25 +1892,5 @@ game_loop:
     call mover_zumbis_por_loop
 
     game_loop.fim:
-    load r6, PlayerMorreu
-    loadn r7, #1
-    cmp r6, r7
-    ceq game_over
 
     jmp game_loop
-
-game_over:
-    loadn r6, #1
-    loadn r7, #TelaGameOverGrafico
-    call printar_grafico_NORMAL_r7_r6
-    loadn r1, #13
-    game_over.loop:
-        inchar r0
-        cmp r1, r0
-        jne game_over.loop
-
-        loadn r6, #1
-        loadn r7, #LimpaTelaGrafico
-        call printar_grafico_NORMAL_r7_r6
-
-        jmp main
