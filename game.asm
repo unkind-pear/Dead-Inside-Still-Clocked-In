@@ -1232,6 +1232,28 @@ ZombiesPos: var #20 ; guarda a posição de até 20 zumbis (máximo de wave)
     static ZombiesPos + #17, #6900
     static ZombiesPos + #18, #6900
     static ZombiesPos + #19, #6900
+
+ZombiesChar: var #20 ; guarda os caracteres de cada zumbi
+    static ZombiesChar + #0, #51724
+    static ZombiesChar + #1, #51725
+    static ZombiesChar + #2, #51726
+    static ZombiesChar + #3, #51724
+    static ZombiesChar + #4, #51725
+    static ZombiesChar + #5, #51725
+    static ZombiesChar + #6, #51724
+    static ZombiesChar + #7, #51724
+    static ZombiesChar + #8, #51725
+    static ZombiesChar + #9, #51724
+    static ZombiesChar + #10, #51724
+    static ZombiesChar + #11, #51725
+    static ZombiesChar + #12, #51726
+    static ZombiesChar + #13, #51725
+    static ZombiesChar + #14, #51726
+    static ZombiesChar + #15, #51724
+    static ZombiesChar + #16, #51726
+    static ZombiesChar + #17, #51724
+    static ZombiesChar + #18, #51726
+    static ZombiesChar + #19, #51724
 PlayerPos: var #1 ; guarda a posição do player
 ShotsPos: var #5 ; guarda a posição de até 5 balas na tela
     static ShotsPos + #0, #6900
@@ -1245,11 +1267,6 @@ ShotsDir: var #5 ; 0 -> direita, 1 -> cima, 2 -> esquerda, 3 -> baixo | guarda a
     static ShotsDir + #2, #6900
     static ShotsDir + #3, #6900
     static ShotsDir + #4, #6900
-
-DelayToShoot: var #1
-DelayToMovePlayer: var #1
-DelayToWrite: var #1
-DelayToMoveZombies: var #1
 
 RandomPosForZombies: var #30 ; guarda 30 posições aleatórias para os zumbis spawnarem
     static RandomPosForZombies + #0, #230
@@ -1587,6 +1604,10 @@ spawnar_wave:
     add r1, r1, r0
     loadi r2, r1 ; número de zumbis para spawnar nessa wave
 
+    loadn r5, #ZombiesChar
+    loadn r3, #19
+    add r5, r5, r3
+
     load r3, RandomPosZombiesPointer
 
     spawnar_wave.loop:        
@@ -1609,8 +1630,12 @@ spawnar_wave:
         jne spawnar_wave.loop.fim
 
         ; mudanca de dados comeca
+        push r6
+        loadi r6, r5
 
-        load r5, ZombieChar
+        push r5
+
+        mov r5, r6
         outchar r5, r7 ; escrevee na tela o zumbi
 
         mov r4, r2 ; as posicões vao até 19, e o r2 vai até 20
@@ -1622,7 +1647,11 @@ spawnar_wave:
 
         storei r6, r5 ; bota na tela o zumbi
 
+        pop r5
+        pop r6
+
         spawnar_wave.loop.fim:
+        dec r5
         inc r3
         dec r2
         jz spawnar_wave.fim
@@ -1707,7 +1736,7 @@ mover_zumbi_r6_r7:
 
     ; a partir daqui, existe mudanca nos dados
 
-    load r5, ZombieChar ; !!!aqui vai poder mudar para varios caracteres de zumbi
+    loadi r5, r5 ; !!!aqui vai poder mudar para varios caracteres de zumbi
     outchar r5, r7
     outchar r3, r1
 
@@ -1778,6 +1807,7 @@ mover_zumbis_por_loop:
 
     loadn r0, #ZombiesPos
     load r2, PlayerPos
+    loadn r6, #ZombiesChar
 
     mover_zumbis_por_loop.loop:
         loadi r1, r0 ; pos zumbi da lista
@@ -1815,11 +1845,15 @@ mover_zumbis_por_loop:
             inc r1
 
             realizar_z_movimento:
+            mov r5, r6
+            push r6
             mov r6, r0
             mov r7, r1
             call mover_zumbi_r6_r7
+            pop r6
     
         mover_zumbis_por_loop.loop.fim:
+        inc r6
         inc r0
         push r1
         push r2
@@ -2358,6 +2392,45 @@ delay_0_5s:
 ; matar player e matar zumbi
 
 main:
+    loadn r0, #20
+    loadn r1, #ZombiesPos
+    loadn r2, #6900
+    zombie_loop345:
+        storei r1, r2
+        inc r1
+        dec r0
+        jnz zombie_loop345
+
+    loadn r0, #5
+    loadn r1, #ShotsPos
+    loadn r2, #6900
+    z_shots_loop:
+        storei r1, r2
+        inc r1
+        dec r0
+        jnz z_shots_loop
+
+    loadn r0, #5
+    loadn r1, #ShotsDir
+    loadn r2, #6900
+    z_shots_loop2:
+        storei r1, r2
+        inc r1
+        dec r0
+        jnz z_shots_loop2
+
+    loadn r0, #32
+    store EmptyChar, r0
+
+    loadn r0, #1200
+    loadn r1, #Screen
+    load r2, EmptyChar
+    z_shots_loop3:
+        storei r1, r2
+        inc r1
+        dec r0
+        jnz z_shots_loop3
+
     loadn r0, #0
     store FacingDirection, r0
 
@@ -2365,23 +2438,24 @@ main:
     store RandomPosZombiesPointer, r0
 
     loadn r0, #13
+    loadn r1, #51712 ; cor verde
+    add r0, r0, r1
     store ZombieChar, r0
 
-    loadn r0, #22
-    store BulletCharDown, r0
-    loadn r0, #23
-    store BulletCharUp, r0
-    loadn r0, #24
-    store BulletCharLeft, r0
-    loadn r0, #15
+    loadn r0, #21
+    loadn r1, #1536 ; cor amarela
+    add r0, r0, r1
     store BulletCharRight, r0
+    inc r0
+    store BulletCharUp, r0
+    inc r0
+    store BulletCharLeft, r0
+    inc r0
+    store BulletCharDown, r0
 
 
     loadn r0, #0
     store WaveCounter, r0
-
-    loadn r0, #32
-    store EmptyChar, r0
 
     loadn r0, #599
     store PlayerPos, r0
@@ -2391,6 +2465,8 @@ main:
     add r0, r0, r1
 
     loadn r2, #10
+    loadn r3, #52224
+    add r2, r2, r3
     storei r0, r2
 
     store PlayerChar, r2
@@ -2401,6 +2477,7 @@ main:
     loadn r0, #0
     store Tick, r0
     store PlayerMorreu, r0
+
 
 game_loop:
     call delay_0_5s
